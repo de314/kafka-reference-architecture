@@ -1,0 +1,20 @@
+{
+  "fields": [
+    {
+      "name": "payload",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    },
+    {
+      "name": "type",
+      "type": ["null", "string"],
+      "default": null
+    }
+  ],
+  "name": "ReferenceMessage",
+  "namespace": "com.bettercloud.platform.reference.kafka.models.avro",
+  "type": "record"
+}
