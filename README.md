@@ -58,10 +58,6 @@ Run the creation script and verify the output matches
 
 Deleting topics: [pf-sla-yolo, pf-sla-throughput, pf-sla-durable]...
 ================
-Topic pf-sla-yolo is marked for deletion.
-Note: This will have no impact if delete.topic.enable is not set to true.
-Topic pf-sla-durable is marked for deletion.
-Note: This will have no impact if delete.topic.enable is not set to true.
 Done deleting topics
 
 Creating topics: [pf-sla-yolo, pf-sla-throughput, pf-sla-durable]...
@@ -85,16 +81,16 @@ pf-sla-throughput
 pf-sla-yolo
 
 Topic:pf-sla-yolo	PartitionCount:2	ReplicationFactor:2	Configs:min.insync.replicas=1
-	Topic: pf-sla-yolo	Partition: 0	Leader: 0	Replicas: 0,1	Isr: 0,1
-	Topic: pf-sla-yolo	Partition: 1	Leader: 1	Replicas: 1,2	Isr: 1,2
+	Topic: pf-sla-yolo	Partition: 0	Leader: 2	Replicas: 2,1	Isr: 2,1
+	Topic: pf-sla-yolo	Partition: 1	Leader: 0	Replicas: 0,2	Isr: 0,2
 
 Topic:pf-sla-throughput	PartitionCount:2	ReplicationFactor:3	Configs:min.insync.replicas=2
-	Topic: pf-sla-throughput	Partition: 0	Leader: 0	Replicas: 0,2,1	Isr: 0,2,1
-	Topic: pf-sla-throughput	Partition: 1	Leader: 1	Replicas: 1,0,2	Isr: 1,0,2
+	Topic: pf-sla-throughput	Partition: 0	Leader: 1	Replicas: 1,2,0	Isr: 1,2,0
+	Topic: pf-sla-throughput	Partition: 1	Leader: 2	Replicas: 2,0,1	Isr: 2,0,1
 
 Topic:pf-sla-durable	PartitionCount:2	ReplicationFactor:3	Configs:min.insync.replicas=2
-	Topic: pf-sla-durable	Partition: 0	Leader: 0	Replicas: 0,1,2	Isr: 0,1,2
-	Topic: pf-sla-durable	Partition: 1	Leader: 1	Replicas: 1,2,0	Isr: 1,2,0
+	Topic: pf-sla-durable	Partition: 0	Leader: 2	Replicas: 2,0,1	Isr: 2,0,1
+	Topic: pf-sla-durable	Partition: 1	Leader: 0	Replicas: 0,1,2	Isr: 0,1,2
 ````
 
 #### Errors
@@ -132,58 +128,49 @@ You can view the load results in lines formatted as follows
 
 #### Local Results on my Mac Book Pro
 
-**100k Iterations**
+**50k Iterations**
 
-| Topic | Partitions | Replication | ISR | ACKS | Duration | Msg Latency | m\s |
-|-------|:----------:|:-----------:|:---:|:----:|:--------:|:-----------:|:---:|
-| pf-sla-yolo | 2 | 2 | 1 | 1| 5682ms | 0.05682ms | 17,599 |
-| pf-sla-throughput | 2 | 3 | 1 | 1 | 3391ms | 0.03391ms | 29,489 |
-| pf-sla-durable | 2 | 3 | 2 | `all` | 2989ms | 0.02989ms | 33,456 |
+| Topic | Partitions | Replication | ISR | ACKS | Msg Latency | m\s |
+|-------|:----------:|:-----------:|:---:|:----:|:-----------:|:---:|
+| pf-sla-durable | 2 | 3 | 2 | `all` | 0.02354 ms | 42480 |
+| pf-sla-throughput | 2 | 3 | 1 | 1 | 0.04094 ms | 22956 |
+| pf-sla-yolo | 2 | 2 | 1 | 1| 0.04356 ms | 36075 |
 
-**100k Iterations (Reverse Order)**
+**250K Iterations**
 
-| Topic | Partitions | Replication | ISR | ACKS | Duration | Msg Latency | m\s |
-|-------|:----------:|:-----------:|:---:|:----:|:--------:|:-----------:|:---:|
-| pf-sla-yolo | 2 | 2 | 1 | 1| 2899ms | 0.02899ms | 34,494 |
-| pf-sla-throughput | 2 | 3 | 1 | 1 | 4152ms | 0.04152ms | 24,084 |
-| pf-sla-durable | 2 | 3 | 2 | `all` | 6295ms | 0.06295ms | 15,885 |
+| Topic | Partitions | Replication | ISR | ACKS | Msg Latency | m\s |
+|-------|:----------:|:-----------:|:---:|:----:|:-----------:|:---:|
+| pf-sla-durable | 2 | 3 | 2 | `all` | 0.019168 ms | 52170 |
+| pf-sla-throughput | 2 | 3 | 1 | 1 | 0.03442 ms | 29052 |
+| pf-sla-yolo | 2 | 2 | 1 | 1| 0.02342 ms | 42698 |
 
-**1M Iterations**
+**750K Iterations**
 
-| Topic | Partitions | Replication | ISR | ACKS | Duration | Msg Latency |
-|-------|:----------:|:-----------:|:---:|:----:|:--------:|:-----------:|
-| pf-sla-yolo | 2 | 2 | 1 | 1| 14553ms | 0.014553ms | 
-| pf-sla-throughput | 2 | 3 | 1 | 1 | 17080ms | 0.01708ms |
-| pf-sla-durable | 2 | 3 | 2 | `all` | 10982ms | 0.010982ms |
+| Topic | Partitions | Replication | ISR | ACKS | Msg Latency | m\s |
+|-------|:----------:|:-----------:|:---:|:----:|:-----------:|:---:|
+| pf-sla-durable | 2 | 3 | 2 | `all` | 0.018996 ms | 52642 |
+| pf-sla-throughput | 2 | 3 | 1 | 1 | 0.038984 ms | 25651 |
+| pf-sla-yolo | 2 | 2 | 1 | 1| 0.026968 ms | 37080 |
 
-Log output for 100k iterations
-```
-ProducerConfig values:
-        acks = 1
-        ...
+**750K Iterations (run yolo first)**
 
-Test for pf-sla-yolo with 100000 messages
-    duration=5682ms avg
-    avg latency=0.05682ms
+| Topic | Partitions | Replication | ISR | ACKS | Msg Latency | m\s |
+|-------|:----------:|:-----------:|:---:|:----:|:-----------:|:---:|
+| pf-sla-yolo | 2 | 2 | 1 | 1| 0.0231413 ms | 43212 |
+| pf-sla-throughput | 2 | 3 | 1 | 1 | 0.037824 ms | 26438 |
+| pf-sla-durable | 2 | 3 | 2 | `all` | 0.021286 ms | 46977 |
 
-Test for pf-sla-throughput with 100000 messages
-    duration=3391ms avg
-    avg latency=0.03391ms
-
-
-
-ProducerConfig values:
-        acks = all
-        ...
-
-Test for pf-sla-durable with 100000 messages
-    duration=2989ms avg
-    avg latency=0.02989ms
-```
 
 #### Analysis
 
+I am still not sure why `durable` is faster than `yolo`. Durable has
 
+1. an additional replica
+1. an additional required in-sync-replica
+1. requires 2 additional acks for a successful publish
+
+It may be related to how the partitions are allocated to each broker, and which node is the
+leader.
 
 #### Disclaimer
 

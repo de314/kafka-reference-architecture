@@ -28,13 +28,18 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.util.concurrent.ListenableFuture;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * View Kafka Docs
@@ -54,7 +59,7 @@ public class ReferenceKafkaApplication {
      *
      */
     private static final String ACKS_DEFAULT = "1";
-    private static final int RETRIES_DEFAULT = 1;
+    private static final int RETRIES_DEFAULT = 5;
 
     @Value("${bootstrap.servers:localhost:9092}")
     private String bootstrapServers;
@@ -76,7 +81,7 @@ public class ReferenceKafkaApplication {
     @Bean
     public KafkaTemplate getDefaultTemplate() {
         Map<String, Object> yoloProps = Maps.newHashMap(producerConfigs());
-        yoloProps.put(ProducerConfig.ACKS_CONFIG, "0");
+//        yoloProps.put(ProducerConfig.ACKS_CONFIG, "0");
         return new KafkaTemplate<>(
                 new DefaultKafkaProducerFactory<>(yoloProps));
     }
@@ -95,6 +100,7 @@ public class ReferenceKafkaApplication {
             int iterations
     ) {
         return args -> {
+            KafkaTemplate<String, LoadMessage> yoloTemplate = getDefaultTemplate();
             KafkaTemplate<String, LoadMessage> throughputTemplate = getDefaultTemplate();
             KafkaTemplate<String, LoadMessage> slaTemplate = getDurableTemplate();
 
@@ -117,7 +123,7 @@ public class ReferenceKafkaApplication {
                     .build();
 
             RunConfig yoloConfig = RunConfig.builder()
-                    .template(throughputTemplate)
+                    .template(yoloTemplate)
                     .topic("pf-sla-yolo")
                     .iterations(iterations)
                     .warmupIterations(warmupIterations)
@@ -125,12 +131,7 @@ public class ReferenceKafkaApplication {
                     .build();
 
             List<List<RunConfig>> runs = Lists.<List<RunConfig>>newArrayList(
-                    Lists.newArrayList(durableConfig, throughputConfig, yoloConfig),
-                    Lists.newArrayList(durableConfig, yoloConfig, throughputConfig),
-                    Lists.newArrayList(throughputConfig, yoloConfig, durableConfig),
-                    Lists.newArrayList(throughputConfig, durableConfig, yoloConfig),
-                    Lists.newArrayList(yoloConfig, throughputConfig, durableConfig),
-                    Lists.newArrayList(yoloConfig, durableConfig, throughputConfig)
+                    Lists.newArrayList(yoloConfig, throughputConfig, durableConfig)
             );
 
             runs.forEach(run -> runProducerLoadTest(run));
@@ -151,7 +152,7 @@ public class ReferenceKafkaApplication {
         String topic = config.getTopic();
         int iterations = config.getIterations();
         int warmupIterations = config.getWarmupIterations();
-        IntStream.range(0, warmupIterations).forEach(i -> template.send(topic, UUID.randomUUID().toString(), LoadMessage.newBuilder()
+        List<ListenableFuture<SendResult<String, LoadMessage>>> sendResults = IntStream.range(0, warmupIterations).mapToObj(i -> template.send(topic, UUID.randomUUID().toString(), LoadMessage.newBuilder()
                 .setIndex(i)
                 .setStartTime(0)
                 .setPublishTime(0)
@@ -159,7 +160,16 @@ public class ReferenceKafkaApplication {
                 .setAvgLatency(0)
                 .setMsgPerSec(0)
                 .build())
-        );
+        ).collect(Collectors.toList());
+        while (sendResults.size() > 0) {
+            Iterator<ListenableFuture<SendResult<String, LoadMessage>>> it = sendResults.iterator();
+            while (it.hasNext()) {
+                ListenableFuture<SendResult<String, LoadMessage>> res = it.next();
+                if (res.isDone() || res.isCancelled()) {
+                    it.remove();
+                }
+            }
+        }
         long startTime = System.currentTimeMillis();
         IntStream.range(0, iterations).forEach(i -> {
             long curr = System.currentTimeMillis();
@@ -206,7 +216,7 @@ public class ReferenceKafkaApplication {
             double avgMsgPerSec = getResults().stream().map(r -> r.getMsgPerSec()).reduce((a1, a2) -> a1 + a2)
                     .map(val -> val / getResults().size())
                     .orElse(-1.0);
-            sb.append(" latency=").append(avgLat).append(" msg/sec=").append(avgMsgPerSec);
+            sb.append(" latency | msg/sec ").append(avgLat).append(" ms | ").append(avgMsgPerSec);
             return sb.toString();
         }
     }
