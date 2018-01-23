@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * https://docs.spring.io/spring-kafka/reference/htmlsingle/#annotation-send-to
  */
 @Slf4j
-@Component
+//@Component
 public class RecordReferenceMessageHandler {
 
     @KafkaListener(id = "pf-reference-record-klistener", topics = "pf-ref-messages")

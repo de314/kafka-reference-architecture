@@ -1,0 +1,32 @@
+{
+  "fields": [
+    {
+      "name": "index",
+      "type": "int"
+    },
+    {
+      "name": "startTime",
+      "type": "long"
+    },
+    {
+      "name": "publishTime",
+      "type": "long"
+    },
+    {
+      "name": "diff",
+      "type": "int"
+    },
+    {
+      "name": "avgLatency",
+      "type": "double"
+    },
+    {
+      "name": "msgPerSec",
+      "type": "double",
+      "default": null
+    }
+  ],
+  "name": "LoadMessage",
+  "namespace": "com.bettercloud.platform.reference.kafka.models.avro",
+  "type": "record"
+}

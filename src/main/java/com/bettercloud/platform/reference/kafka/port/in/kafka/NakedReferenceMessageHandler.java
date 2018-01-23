@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * https://docs.spring.io/spring-kafka/reference/htmlsingle/#annotation-send-to
  */
 @Slf4j
-@Component
+//@Component
 public class NakedReferenceMessageHandler {
 
     @KafkaListener(id = "pf-reference-naked-klistener", topics = "pf-ref-messages")
