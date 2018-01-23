@@ -11,12 +11,18 @@ import java.util.List;
 
 @Slf4j
 @Component
-@KafkaListener(group = "pf-batch-reference-klistener", topics = "pf-ref-messages", containerFactory = "batchContainerFactory")
 public class BatchReferenceMessageHandler {
 
-    @KafkaHandler
-    public void onMessages(List<ConsumerRecord<String, ReferenceMessage>> records) {
-        log.info("Processing {} messages", records.size());
+    /*
+     * If you want to use ConsumerRecords:
+     *  - you cannot place this annotation at the class level and use @KafkaHandler at method level
+     *
+     * If you only need the payload
+     *  - you can place this annotation at the class level and use @KafkaHandler at method level
+     */
+    @KafkaListener(id = "pf-reference-batch-klistener", topics = "pf-ref-messages", containerFactory = "batchContainerFactory")
+    public void onMessage(List<ConsumerRecord<String, ReferenceMessage>> records) {
+        log.info("Processing {} records", records.size());
         records.forEach(rec -> log.info("Handled {}@{}", rec.partition(), rec.offset()));
     }
 }

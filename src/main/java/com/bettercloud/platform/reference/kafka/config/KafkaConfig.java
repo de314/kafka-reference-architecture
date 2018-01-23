@@ -1,10 +1,13 @@
 package com.bettercloud.platform.reference.kafka.config;
 
+import com.bettercloud.platform.reference.kafka.models.avro.ReferenceMessage;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -19,6 +22,8 @@ import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -75,58 +80,26 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, Object> consumerFactory() {
-        return new DefaultKafkaConsumerFactory<>(baseConsumerConfigs());
+    public ConsumerFactory consumerFactory() {
+        DefaultKafkaConsumerFactory<Object, Object> delegate = new DefaultKafkaConsumerFactory<>(baseConsumerConfigs());
+        return new ReportingConsumerFactory(delegate);
     }
 
     @Bean
     @Primary
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>> defaultContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer> defaultContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.setConcurrency(listenerConcurrency);
         return factory;
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Object>> batchContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer> batchContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.setConcurrency(listenerConcurrency);
         factory.setBatchListener(true);
         return factory;
-    }
-
-    /*
-     *
-     * PRODUCERS
-     *
-     */
-    @Bean
-    public ProducerFactory<Integer, String> producerFactory() {
-        return new DefaultKafkaProducerFactory<>(producerConfigs());
-    }
-
-    @Bean
-    public Map<String, Object> producerConfigs() {
-        final Map<String, Object> props = Maps.newConcurrentMap();
-        props.put(ProducerConfig.ACKS_CONFIG, ACKS_DEFAULT);
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
-        props.put(ProducerConfig.RETRIES_CONFIG, RETRIES_DEFAULT);
-        return props;
-    }
-
-    @Bean
-    public KafkaTemplate<String, Object> getDefaultTemplate(Map<String, Object> properties) {
-        return new KafkaTemplate<>(
-                new DefaultKafkaProducerFactory<>(producerConfigs()));
-    }
-
-    @Bean
-    public KafkaTemplate<Integer, String> kafkaTemplate() {
-        return new KafkaTemplate<Integer, String>(producerFactory());
     }
 }

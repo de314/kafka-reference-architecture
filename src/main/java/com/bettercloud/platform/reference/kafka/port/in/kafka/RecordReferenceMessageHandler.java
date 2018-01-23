@@ -3,7 +3,6 @@ package com.bettercloud.platform.reference.kafka.port.in.kafka;
 import com.bettercloud.platform.reference.kafka.models.avro.ReferenceMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +15,9 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@KafkaListener(group = "pf-reference-klistener", topics = "pf-ref-messages")
-public class ReferenceMessageHandler  {
+public class RecordReferenceMessageHandler {
 
-    @KafkaHandler
+    @KafkaListener(id = "pf-reference-record-klistener", topics = "pf-ref-messages")
     public void onMessage(ConsumerRecord<String, ReferenceMessage> record) {
         String key = record.key();
         String topic = record.topic();
@@ -28,10 +26,5 @@ public class ReferenceMessageHandler  {
         long offset = record.offset();
         long timestamp = record.timestamp();
         log.info("Got {} on {}=>{}:{} @{} with value {}", key, topic, partition, offset, timestamp, payload);
-    }
-
-    @KafkaHandler
-    public void onMessage(ReferenceMessage message) {
-        log.info("Received {}", message);
     }
 }
