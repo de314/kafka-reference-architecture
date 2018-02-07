@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Slf4j
-@Component
-@KafkaListener(group = "pf-batch-reference-klistener", topics = "pf-ref-messages", containerFactory = "batchContainerFactory")
+//@Component
+//@KafkaListener(group = "pf-batch-reference-klistener", topics = "pf-ref-messages", containerFactory = "batchContainerFactory")
 public class BatchReferenceMessageHandler {
 
     @KafkaHandler

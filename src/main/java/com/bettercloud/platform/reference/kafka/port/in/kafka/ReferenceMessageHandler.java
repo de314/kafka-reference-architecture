@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
  * https://docs.spring.io/spring-kafka/reference/htmlsingle/#annotation-send-to
  */
 @Slf4j
-@Component
-@KafkaListener(group = "pf-reference-klistener", topics = "pf-ref-messages")
+//@Component
+//@KafkaListener(group = "pf-reference-klistener", topics = "pf-ref-messages")
 public class ReferenceMessageHandler  {
 
-    @KafkaHandler
+//    @KafkaHandler
     public void onMessage(ConsumerRecord<String, ReferenceMessage> record) {
         String key = record.key();
         String topic = record.topic();
@@ -30,7 +30,7 @@ public class ReferenceMessageHandler  {
         log.info("Got {} on {}=>{}:{} @{} with value {}", key, topic, partition, offset, timestamp, payload);
     }
 
-    @KafkaHandler
+//    @KafkaHandler
     public void onMessage(ReferenceMessage message) {
         log.info("Received {}", message);
     }
